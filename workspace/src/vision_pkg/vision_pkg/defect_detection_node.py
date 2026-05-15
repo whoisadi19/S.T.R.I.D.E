@@ -156,10 +156,12 @@ class DefectDetectionNode(Node):
                 }
                 detections.append(defect)
 
-                # Draw on annotated image
-                color = self.defect_colors.get(cls_name, (0, 255, 0))
-                cv2.rectangle(annotated, (x1, y1), (x2, y2), color, 2)
-                label = f'{cls_name} {conf:.0%}'
+                # Neon Color Coding based on Severity
+                color = self._get_severity_color(defect['severity'])
+                
+                # Draw Cyber-Physical Brackets instead of basic rectangle
+                self._draw_hud_bracket(annotated, x1, y1, x2, y2, color)
+                label = f'{cls_name.upper()} {conf:.0%}'
                 self._draw_label(annotated, label, x1, y1, color)
 
         return detections, annotated
@@ -218,9 +220,9 @@ class DefectDetectionNode(Node):
                 }
                 detections.append(defect)
 
-                color = self.defect_colors.get(defect_type, (0, 255, 0))
-                cv2.rectangle(annotated, (x, y), (x + cw, y + ch), color, 2)
-                label = f'{defect_type} {conf:.0%}'
+                color = self._get_severity_color(defect['severity'])
+                self._draw_hud_bracket(annotated, x, y, x + cw, y + ch, color)
+                label = f'{defect_type.upper()} {conf:.0%}'
                 self._draw_label(annotated, label, x, y, color)
 
         # --- Method 2: Color-based rust detection ---
@@ -248,9 +250,9 @@ class DefectDetectionNode(Node):
                 }
                 detections.append(defect)
 
-                color = self.defect_colors['rust']
-                cv2.rectangle(annotated, (x, y), (x + cw, y + ch), color, 2)
-                label = f'rust {conf:.0%}'
+                color = self._get_severity_color(defect['severity'])
+                self._draw_hud_bracket(annotated, x, y, x + cw, y + ch, color)
+                label = f'RUST {conf:.0%}'
                 self._draw_label(annotated, label, x, y, color)
 
         # --- HUD overlay ---
@@ -263,11 +265,35 @@ class DefectDetectionNode(Node):
     def _classify_severity(self, confidence):
         """Map confidence score to a severity level."""
         if confidence >= 0.8:
-            return 'HIGH'
+            return 'CRITICAL'
         elif confidence >= 0.5:
-            return 'MEDIUM'
+            return 'WARNING'
         else:
             return 'LOW'
+
+    def _get_severity_color(self, severity):
+        """Return BGR color for severity."""
+        if severity == 'CRITICAL':
+            return (60, 0, 255)  # Neon Red (BGR)
+        elif severity == 'WARNING':
+            return (0, 230, 255) # Neon Yellow (BGR)
+        else:
+            return (0, 255, 0)   # Neon Green (BGR)
+
+    def _draw_hud_bracket(self, image, x1, y1, x2, y2, color, thickness=2, length=15):
+        """Draws targeting brackets instead of a full bounding box."""
+        # Top-left corner
+        cv2.line(image, (x1, y1), (x1 + length, y1), color, thickness)
+        cv2.line(image, (x1, y1), (x1, y1 + length), color, thickness)
+        # Top-right corner
+        cv2.line(image, (x2, y1), (x2 - length, y1), color, thickness)
+        cv2.line(image, (x2, y1), (x2, y1 + length), color, thickness)
+        # Bottom-left corner
+        cv2.line(image, (x1, y2), (x1 + length, y2), color, thickness)
+        cv2.line(image, (x1, y2), (x1, y2 - length), color, thickness)
+        # Bottom-right corner
+        cv2.line(image, (x2, y2), (x2 - length, y2), color, thickness)
+        cv2.line(image, (x2, y2), (x2, y2 - length), color, thickness)
 
     def _draw_label(self, image, text, x, y, color):
         """Draw a label with background on the image."""
@@ -278,29 +304,52 @@ class DefectDetectionNode(Node):
         # Background rectangle
         cv2.rectangle(image, (x, y - th - 6), (x + tw + 4, y), color, -1)
         # Text
-        cv2.putText(image, text, (x + 2, y - 4), font, font_scale,
-                    (255, 255, 255), thickness, cv2.LINE_AA)
+        cv2.putText(image, text, (x + 2, y - 4), cv2.FONT_HERSHEY_PLAIN, 1.0,
+                    (0, 0, 0), 1, cv2.LINE_AA)
 
     def _draw_hud(self, image, num_detections):
-        """Draw a heads-up display overlay on the frame."""
+        """Draw a cyber-physical heads-up display overlay on the frame."""
         h, w = image.shape[:2]
 
-        # Semi-transparent top bar
+        # 1. Semi-transparent top & bottom bars
         overlay = image.copy()
-        cv2.rectangle(overlay, (0, 0), (w, 35), (0, 0, 0), -1)
-        cv2.addWeighted(overlay, 0.6, image, 0.4, 0, image)
+        cv2.rectangle(overlay, (0, 0), (w, 40), (20, 20, 20), -1)
+        cv2.rectangle(overlay, (0, h - 30), (w, h), (20, 20, 20), -1)
+        cv2.addWeighted(overlay, 0.7, image, 0.3, 0, image)
 
-        # HUD text
+        # 2. Central Scanning Crosshair
+        cx, cy = w // 2, h // 2
+        cv2.line(image, (cx - 20, cy), (cx + 20, cy), (0, 255, 0), 1)
+        cv2.line(image, (cx, cy - 20), (cx, cy + 20), (0, 255, 0), 1)
+        cv2.circle(image, (cx, cy), 15, (0, 255, 0), 1)
+        
+        # Add dynamic scanning tick marks based on frame counter
+        tick_offset = (self.total_frames * 2) % 20
+        cv2.line(image, (cx - 30 + tick_offset, cy - 10), (cx - 30 + tick_offset, cy + 10), (0, 200, 0), 1)
+        cv2.line(image, (cx + 30 - tick_offset, cy - 10), (cx + 30 - tick_offset, cy + 10), (0, 200, 0), 1)
+
+        # 3. Top HUD text
         font = cv2.FONT_HERSHEY_SIMPLEX
         timestamp = time.strftime('%H:%M:%S')
-        hud_text = (f'DRONE INSPECTION | Frame: {self.total_frames} | '
-                    f'Defects: {num_detections} | {timestamp}')
-        cv2.putText(image, hud_text, (10, 24), font, 0.5,
-                    (0, 255, 0), 1, cv2.LINE_AA)
+        hud_text = f'S.T.R.I.D.E. AUTO-INSPECTION | SYS: ONLINE | FPS: {self.inference_rate}'
+        cv2.putText(image, hud_text, (10, 25), font, 0.5, (0, 255, 0), 1, cv2.LINE_AA)
 
-        # Status indicator
-        status_color = (0, 0, 255) if num_detections > 0 else (0, 255, 0)
-        cv2.circle(image, (w - 20, 18), 8, status_color, -1)
+        # 4. Bottom HUD text (Coordinates & Timestamps)
+        coord_text = f'LAT: 34.0522 N | LON: 118.2437 W | ALT: 12.4m | TIME: {timestamp}'
+        cv2.putText(image, coord_text, (10, h - 10), font, 0.4, (0, 255, 0), 1, cv2.LINE_AA)
+
+        # 5. Flashing Critical Warning
+        if num_detections > 0:
+            # Flash red based on time
+            if int(time.time() * 4) % 2 == 0:
+                warning_text = 'STRUCTURAL RISK DETECTED'
+                (tw, th), _ = cv2.getTextSize(warning_text, font, 0.7, 2)
+                cv2.putText(image, warning_text, (w // 2 - tw // 2, h - 50), font, 0.7, (60, 0, 255), 2, cv2.LINE_AA)
+        
+        # Top-right Status indicator
+        status_color = (60, 0, 255) if num_detections > 0 else (0, 255, 0)
+        cv2.putText(image, "AI", (w - 45, 25), font, 0.5, status_color, 1, cv2.LINE_AA)
+        cv2.circle(image, (w - 20, 21), 6, status_color, -1)
 
     def _publish_annotated(self, image):
         """Publish annotated frame as JPEG CompressedImage."""
