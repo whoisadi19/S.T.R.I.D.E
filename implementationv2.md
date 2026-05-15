@@ -13,20 +13,20 @@ This project aims to build an end-to-end simulated autonomous drone inspection s
 
 ## Architecture & Phases
 
-### Phase 1: Simulation Foundation
+### Phase 1: Simulation Foundation [COMPLETED]
 - Set up a ROS 2 workspace in the `autonomous_drone_inspection` directory.
 - Configure a Dockerfile/Docker Compose setup to easily run ROS 2 and Gazebo on Windows (this abstracts away the complex Gazebo installation).
 - Create a custom Gazebo world containing the target infrastructure (e.g., a simple tower or bridge).
 
-### Phase 2: Autonomous Navigation
-- **Gazebo Drone Model**: Creating a `simple_drone` SDF model equipped with camera and LiDAR sensors, and a `kinematics_node.py` to translate `/cmd_vel` into Gazebo `/set_entity_state` updates.
+### Phase 2: Autonomous Navigation [COMPLETED]
+- **Gazebo Drone Model**: Created a `simple_drone` SDF model equipped with camera and LiDAR sensors, and a `kinematics_node.py` to translate `/cmd_vel` into Gazebo `/set_entity_state` updates.
 - `drone_control_pkg/navigation_node.py`: A ROS 2 node to handle offboard control, sending a sequence of waypoints to orbit/survey the infrastructure automatically.
 - **Obstacle Avoidance:** Subscribes to `/scan` or `/depth/points`. If `min_range < threshold`, it pauses waypoint execution, hovers, and reroutes.
 - **Geo-Fencing:** Implements safety boundaries (e.g., `x_min`, `x_max`, `z_max`). Breaching bounds triggers an immediate `RETURN_TO_LAUNCH`.
 - **State Machine Architecture**: Implement a robust state machine (`TAKEOFF` -> `TRANSIT` -> `ORBIT/SURVEY` -> `RETURN_TO_LAUNCH` -> `FAILSAFE` -> `EMERGENCY_LAND`) to manage flight logic, handle comms loss (`FAILSAFE`), and critical errors (`EMERGENCY_LAND`).
 
-### Phase 3: Vision & Defect Detection
-- `vision_pkg/defect_detection_node.py`: Subscribes to the simulated drone camera feed (`/camera/image_raw`).
+### Phase 3: Vision & Defect Detection [IN PROGRESS]
+- `vision_pkg/defect_detection_node.py`: Subscribes to the simulated drone camera feed (`/camera/image_raw`). Core node implemented with OpenCV simulation mode.
 - **YOLOv8 Fine-Tuning**: Integrates a YOLOv8 model fine-tuned on datasets like **CODEBRIM** or **RDD2022** for 10-20 epochs to properly detect structural cracks and rust (evaluated using mAP@50). 
 - **Streaming Optimization**: Instead of pushing raw arrays to the web frontend, this node compresses the annotated frames to JPEG and publishes them, while also publishing defect metadata (coordinates, severity) separately.
 - **Multi-Sensor Architecture**: The sensor pipeline is designed as a pluggable ROS 2 topic interface. Thermal (`/thermal/image_raw`) and LiDAR (`/scan`) can be integrated by swapping the sensor source topic—no changes required in the detection node.
@@ -50,3 +50,8 @@ To demonstrate hardware readiness, we will structure the architecture to support
 
 ### Multi-Drone Coordination
 The architecture supports multi-agent drone coordination via ROS 2 namespacing. Each drone runs as an isolated namespace (e.g., `/drone_1/`, `/drone_2/`) with a shared FastAPI aggregator handling fleet telemetry.
+
+## Version Control [ACTIVE]
+- Git repository initialized.
+- Remote origin set to: `https://github.com/whoisadi19/S.T.R.I.D.E`
+- `.gitignore` configured to exclude large AI models, build artifacts, and generated images.

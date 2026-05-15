@@ -40,8 +40,28 @@ This document tracks all steps, errors, approaches, and important decisions made
 - **Error:** Attempted to run `colcon build` inside a new `docker exec` bash session.
   - **Log:** `CMake Error at CMakeLists.txt:8 (find_package): Could not find a package configuration file provided by "ament_cmake"`
   - **Resolution:** A new interactive bash session does not inherit the environment variables from the `start.sh` entrypoint. Advised user to run `source /opt/ros/humble/setup.bash` before running `colcon build`.
+- **Error:** Gazebo simulation didn't pop up after running launch command.
+  - **Resolution:** Clarified that the GUI runs inside the Docker container's virtual desktop. User needs to access `http://localhost:8080` in their browser.
+
+## Phase 2 & 3 Implementation
+
+### Autonomous Navigation (Phase 2)
+- Created `drone_control_pkg` with two main nodes:
+  - `kinematics_node.py`: Acts as the bridge between ROS 2 `/cmd_vel` and Gazebo's kinematic state. Uses the `/set_entity_state` service to move the drone model.
+  - `navigation_node.py`: Implements a waypoint follower. The drone takes off, flies to a fixed radius, and performs an automated orbit around the inspection tower at 5m altitude.
+- Integrated **LiDAR-based Obstacle Avoidance**: The navigation node monitors `/scan` and holds position if an obstacle is detected within 1.5m.
+
+### Vision Pipeline (Phase 3)
+- Created `vision_pkg` containing `defect_detection_node.py`.
+- **OpenCV Simulation Mode:** Since the simulation tower has no real defects, we implemented OpenCV-based "defect simulation" using Canny edge detection for cracks and HSV color masking for rust.
+- **Data Streaming:** Configured the node to publish JPEG-compressed annotated images to `/vision/annotated_image` and JSON metadata to `/vision/defects` for consumption by the future web dashboard.
+
+## Version Control & GitHub
+- Initialized a Git repository in the project root.
+- Created a comprehensive `.gitignore` to exclude ROS build artifacts, large `.pt` models, and generated images.
+- Pushed the source code to GitHub: `https://github.com/whoisadi19/S.T.R.I.D.E`
 
 ### Current Status
-- **Phase 1 Complete:** Docker simulation container built successfully and NoVNC interface is running locally on port 8080.
-- Addressed all architectural flaws and updated the project plan to `implementationv2.md`. 
-- Ready to move to Phase 2 (ROS Nodes) or Phase 4 (Backend/Frontend).
+- **Phase 1 & 2 Complete:** Simulation environment and autonomous navigation are fully functional.
+- **Phase 3 In Progress:** Core vision pipeline implemented and verified with OpenCV simulation. Ready for YOLOv8 model integration.
+- Project is under version control on GitHub.
