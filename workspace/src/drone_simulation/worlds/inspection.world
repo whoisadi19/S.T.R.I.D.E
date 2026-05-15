@@ -470,11 +470,386 @@
     </model>
 
     <!-- ============================================================ -->
+    <!-- HELIPAD / LANDING ZONE                                        -->
+    <!-- ============================================================ -->
+    <model name="helipad">
+      <static>true</static>
+      <pose>0 -6 0.011 0 0 0</pose>
+      <link name="pad_link">
+        <!-- Pad base -->
+        <visual name="pad_base">
+          <geometry><cylinder><radius>2.0</radius><length>0.02</length></cylinder></geometry>
+          <material>
+            <ambient>0.25 0.25 0.25 1</ambient>
+            <diffuse>0.3 0.3 0.3 1</diffuse>
+          </material>
+        </visual>
+        <!-- Inner circle -->
+        <visual name="pad_ring">
+          <pose>0 0 0.002 0 0 0</pose>
+          <geometry><cylinder><radius>1.5</radius><length>0.005</length></cylinder></geometry>
+          <material>
+            <ambient>0.9 0.9 0.0 1</ambient>
+            <diffuse>1.0 1.0 0.0 1</diffuse>
+          </material>
+        </visual>
+        <!-- H letter — vertical bar -->
+        <visual name="h_vert_l">
+          <pose>-0.3 0 0.005 0 0 0</pose>
+          <geometry><box><size>0.12 1.0 0.005</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <visual name="h_vert_r">
+          <pose>0.3 0 0.005 0 0 0</pose>
+          <geometry><box><size>0.12 1.0 0.005</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <visual name="h_horiz">
+          <pose>0 0 0.005 0 0 0</pose>
+          <geometry><box><size>0.72 0.12 0.005</size></box></geometry>
+          <material><ambient>0.9 0.9 0.9 1</ambient><diffuse>1 1 1 1</diffuse></material>
+        </visual>
+        <!-- Corner markers -->
+        <visual name="corner_1">
+          <pose>1.3 1.3 0.005 0 0 0.785</pose>
+          <geometry><box><size>0.6 0.08 0.005</size></box></geometry>
+          <material><ambient>0.9 0.9 0.0 1</ambient><diffuse>1 1 0 1</diffuse></material>
+        </visual>
+        <visual name="corner_2">
+          <pose>-1.3 1.3 0.005 0 0 -0.785</pose>
+          <geometry><box><size>0.6 0.08 0.005</size></box></geometry>
+          <material><ambient>0.9 0.9 0.0 1</ambient><diffuse>1 1 0 1</diffuse></material>
+        </visual>
+        <visual name="corner_3">
+          <pose>1.3 -1.3 0.005 0 0 -0.785</pose>
+          <geometry><box><size>0.6 0.08 0.005</size></box></geometry>
+          <material><ambient>0.9 0.9 0.0 1</ambient><diffuse>1 1 0 1</diffuse></material>
+        </visual>
+        <visual name="corner_4">
+          <pose>-1.3 -1.3 0.005 0 0 0.785</pose>
+          <geometry><box><size>0.6 0.08 0.005</size></box></geometry>
+          <material><ambient>0.9 0.9 0.0 1</ambient><diffuse>1 1 0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!-- BRIDGE with WATER                                             -->
+    <!-- ============================================================ -->
+
+    <!-- Water body under bridge -->
+    <model name="water">
+      <static>true</static>
+      <pose>20 0 -0.3 0 0 0</pose>
+      <link name="water_link">
+        <visual name="water_surface">
+          <geometry><box><size>12 20 0.02</size></box></geometry>
+          <material>
+            <ambient>0.1 0.3 0.5 0.8</ambient>
+            <diffuse>0.15 0.4 0.65 0.85</diffuse>
+            <specular>0.6 0.6 0.7 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Steel truss bridge -->
+    <model name="bridge">
+      <static>true</static>
+      <pose>20 0 0 0 0 0</pose>
+      <link name="bridge_link">
+        <!-- Bridge deck -->
+        <visual name="deck">
+          <pose>0 0 2.0 0 0 0</pose>
+          <geometry><box><size>8 3.5 0.2</size></box></geometry>
+          <material>
+            <ambient>0.4 0.4 0.38 1</ambient>
+            <diffuse>0.5 0.5 0.46 1</diffuse>
+          </material>
+        </visual>
+        <collision name="deck_col">
+          <pose>0 0 2.0 0 0 0</pose>
+          <geometry><box><size>8 3.5 0.2</size></box></geometry>
+        </collision>
+        <!-- Support pillars -->
+        <visual name="pillar_1">
+          <pose>-3 -1.2 1.0 0 0 0</pose>
+          <geometry><box><size>0.5 0.5 2.0</size></box></geometry>
+          <material><ambient>0.45 0.45 0.42 1</ambient><diffuse>0.55 0.55 0.5 1</diffuse></material>
+        </visual>
+        <visual name="pillar_2">
+          <pose>-3 1.2 1.0 0 0 0</pose>
+          <geometry><box><size>0.5 0.5 2.0</size></box></geometry>
+          <material><ambient>0.45 0.45 0.42 1</ambient><diffuse>0.55 0.55 0.5 1</diffuse></material>
+        </visual>
+        <visual name="pillar_3">
+          <pose>3 -1.2 1.0 0 0 0</pose>
+          <geometry><box><size>0.5 0.5 2.0</size></box></geometry>
+          <material><ambient>0.45 0.45 0.42 1</ambient><diffuse>0.55 0.55 0.5 1</diffuse></material>
+        </visual>
+        <visual name="pillar_4">
+          <pose>3 1.2 1.0 0 0 0</pose>
+          <geometry><box><size>0.5 0.5 2.0</size></box></geometry>
+          <material><ambient>0.45 0.45 0.42 1</ambient><diffuse>0.55 0.55 0.5 1</diffuse></material>
+        </visual>
+        <!-- Side trusses (left) -->
+        <visual name="truss_l_top">
+          <pose>0 -1.75 3.5 0 0 0</pose>
+          <geometry><box><size>8 0.08 0.08</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_l_bot">
+          <pose>0 -1.75 2.15 0 0 0</pose>
+          <geometry><box><size>8 0.08 0.08</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_l_v1">
+          <pose>-3 -1.75 2.8 0 0 0</pose>
+          <geometry><box><size>0.06 0.06 1.4</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_l_v2">
+          <pose>-1 -1.75 2.8 0 0 0</pose>
+          <geometry><box><size>0.06 0.06 1.4</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_l_v3">
+          <pose>1 -1.75 2.8 0 0 0</pose>
+          <geometry><box><size>0.06 0.06 1.4</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_l_v4">
+          <pose>3 -1.75 2.8 0 0 0</pose>
+          <geometry><box><size>0.06 0.06 1.4</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <!-- Side trusses (right) -->
+        <visual name="truss_r_top">
+          <pose>0 1.75 3.5 0 0 0</pose>
+          <geometry><box><size>8 0.08 0.08</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_r_bot">
+          <pose>0 1.75 2.15 0 0 0</pose>
+          <geometry><box><size>8 0.08 0.08</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_r_v1">
+          <pose>-3 1.75 2.8 0 0 0</pose>
+          <geometry><box><size>0.06 0.06 1.4</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_r_v2">
+          <pose>-1 1.75 2.8 0 0 0</pose>
+          <geometry><box><size>0.06 0.06 1.4</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_r_v3">
+          <pose>1 1.75 2.8 0 0 0</pose>
+          <geometry><box><size>0.06 0.06 1.4</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <visual name="truss_r_v4">
+          <pose>3 1.75 2.8 0 0 0</pose>
+          <geometry><box><size>0.06 0.06 1.4</size></box></geometry>
+          <material><ambient>0.5 0.3 0.15 1</ambient><diffuse>0.6 0.35 0.18 1</diffuse></material>
+        </visual>
+        <!-- Rust patches on bridge -->
+        <visual name="bridge_rust_1">
+          <pose>1.5 -1.74 2.6 0 0 0</pose>
+          <geometry><box><size>0.8 0.04 0.5</size></box></geometry>
+          <material><ambient>0.6 0.3 0.12 1</ambient><diffuse>0.7 0.35 0.15 1</diffuse></material>
+        </visual>
+        <visual name="bridge_rust_2">
+          <pose>-2 0 1.91 0 0 0</pose>
+          <geometry><box><size>1.0 0.6 0.04</size></box></geometry>
+          <material><ambient>0.55 0.28 0.1 1</ambient><diffuse>0.65 0.33 0.13 1</diffuse></material>
+        </visual>
+        <!-- Guard rails on deck -->
+        <visual name="guard_l">
+          <pose>0 -1.7 2.5 0 0 0</pose>
+          <geometry><box><size>8 0.05 0.8</size></box></geometry>
+          <material><ambient>0.6 0.6 0.0 1</ambient><diffuse>0.8 0.8 0.0 1</diffuse></material>
+        </visual>
+        <visual name="guard_r">
+          <pose>0 1.7 2.5 0 0 0</pose>
+          <geometry><box><size>8 0.05 0.8</size></box></geometry>
+          <material><ambient>0.6 0.6 0.0 1</ambient><diffuse>0.8 0.8 0.0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!-- PIPELINE RACK                                                 -->
+    <!-- ============================================================ -->
+    <model name="pipeline_rack">
+      <static>true</static>
+      <pose>-12 8 0 0 0 0</pose>
+      <link name="pipe_link">
+        <!-- Support frames -->
+        <visual name="frame_1">
+          <pose>-3 0 1.5 0 0 0</pose>
+          <geometry><box><size>0.15 2.5 3.0</size></box></geometry>
+          <material><ambient>0.4 0.4 0.38 1</ambient><diffuse>0.5 0.5 0.46 1</diffuse></material>
+        </visual>
+        <visual name="frame_2">
+          <pose>0 0 1.5 0 0 0</pose>
+          <geometry><box><size>0.15 2.5 3.0</size></box></geometry>
+          <material><ambient>0.4 0.4 0.38 1</ambient><diffuse>0.5 0.5 0.46 1</diffuse></material>
+        </visual>
+        <visual name="frame_3">
+          <pose>3 0 1.5 0 0 0</pose>
+          <geometry><box><size>0.15 2.5 3.0</size></box></geometry>
+          <material><ambient>0.4 0.4 0.38 1</ambient><diffuse>0.5 0.5 0.46 1</diffuse></material>
+        </visual>
+        <!-- Pipes — large (oil/gas) -->
+        <visual name="pipe_big_1">
+          <pose>0 -0.6 2.8 0 1.5708 0</pose>
+          <geometry><cylinder><radius>0.15</radius><length>7</length></cylinder></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse><specular>0.7 0.7 0.7 1</specular></material>
+        </visual>
+        <visual name="pipe_big_2">
+          <pose>0 0.6 2.5 0 1.5708 0</pose>
+          <geometry><cylinder><radius>0.12</radius><length>7</length></cylinder></geometry>
+          <material><ambient>0.5 0.5 0.5 1</ambient><diffuse>0.6 0.6 0.6 1</diffuse><specular>0.7 0.7 0.7 1</specular></material>
+        </visual>
+        <!-- Small pipes -->
+        <visual name="pipe_sm_1">
+          <pose>0 -0.2 2.0 0 1.5708 0</pose>
+          <geometry><cylinder><radius>0.06</radius><length>7</length></cylinder></geometry>
+          <material><ambient>0.3 0.5 0.3 1</ambient><diffuse>0.4 0.6 0.4 1</diffuse></material>
+        </visual>
+        <visual name="pipe_sm_2">
+          <pose>0 0.2 1.8 0 1.5708 0</pose>
+          <geometry><cylinder><radius>0.05</radius><length>7</length></cylinder></geometry>
+          <material><ambient>0.6 0.3 0.15 1</ambient><diffuse>0.7 0.35 0.18 1</diffuse></material>
+        </visual>
+        <!-- Pipe rust -->
+        <visual name="pipe_rust">
+          <pose>1.5 -0.6 2.96 0 0 0</pose>
+          <geometry><box><size>1.0 0.04 0.15</size></box></geometry>
+          <material><ambient>0.6 0.3 0.1 1</ambient><diffuse>0.7 0.35 0.12 1</diffuse></material>
+        </visual>
+        <!-- Collision for whole rack -->
+        <collision name="rack_col">
+          <pose>0 0 1.5 0 0 0</pose>
+          <geometry><box><size>7 2.5 3.0</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!-- POWER LINE POLES                                               -->
+    <!-- ============================================================ -->
+    <model name="power_pole_1">
+      <static>true</static>
+      <pose>-8 -12 0 0 0 0</pose>
+      <link name="pole_link">
+        <visual name="pole">
+          <pose>0 0 4 0 0 0</pose>
+          <geometry><cylinder><radius>0.12</radius><length>8</length></cylinder></geometry>
+          <material><ambient>0.4 0.3 0.2 1</ambient><diffuse>0.5 0.38 0.25 1</diffuse></material>
+        </visual>
+        <visual name="cross_arm">
+          <pose>0 0 7.5 0 0 0</pose>
+          <geometry><box><size>0.1 3.0 0.1</size></box></geometry>
+          <material><ambient>0.4 0.3 0.2 1</ambient><diffuse>0.5 0.38 0.25 1</diffuse></material>
+        </visual>
+        <visual name="insulator_l">
+          <pose>0 -1.3 7.2 0 0 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.3</length></cylinder></geometry>
+          <material><ambient>0.3 0.6 0.3 1</ambient><diffuse>0.4 0.7 0.4 1</diffuse></material>
+        </visual>
+        <visual name="insulator_r">
+          <pose>0 1.3 7.2 0 0 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.3</length></cylinder></geometry>
+          <material><ambient>0.3 0.6 0.3 1</ambient><diffuse>0.4 0.7 0.4 1</diffuse></material>
+        </visual>
+        <collision name="pole_col">
+          <pose>0 0 4 0 0 0</pose>
+          <geometry><cylinder><radius>0.12</radius><length>8</length></cylinder></geometry>
+        </collision>
+      </link>
+    </model>
+
+    <model name="power_pole_2">
+      <static>true</static>
+      <pose>-8 0 0 0 0 0</pose>
+      <link name="pole_link">
+        <visual name="pole">
+          <pose>0 0 4 0 0 0</pose>
+          <geometry><cylinder><radius>0.12</radius><length>8</length></cylinder></geometry>
+          <material><ambient>0.4 0.3 0.2 1</ambient><diffuse>0.5 0.38 0.25 1</diffuse></material>
+        </visual>
+        <visual name="cross_arm">
+          <pose>0 0 7.5 0 0 0</pose>
+          <geometry><box><size>0.1 3.0 0.1</size></box></geometry>
+          <material><ambient>0.4 0.3 0.2 1</ambient><diffuse>0.5 0.38 0.25 1</diffuse></material>
+        </visual>
+        <visual name="insulator_l">
+          <pose>0 -1.3 7.2 0 0 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.3</length></cylinder></geometry>
+          <material><ambient>0.3 0.6 0.3 1</ambient><diffuse>0.4 0.7 0.4 1</diffuse></material>
+        </visual>
+        <visual name="insulator_r">
+          <pose>0 1.3 7.2 0 0 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.3</length></cylinder></geometry>
+          <material><ambient>0.3 0.6 0.3 1</ambient><diffuse>0.4 0.7 0.4 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="power_pole_3">
+      <static>true</static>
+      <pose>-8 12 0 0 0 0</pose>
+      <link name="pole_link">
+        <visual name="pole">
+          <pose>0 0 4 0 0 0</pose>
+          <geometry><cylinder><radius>0.12</radius><length>8</length></cylinder></geometry>
+          <material><ambient>0.4 0.3 0.2 1</ambient><diffuse>0.5 0.38 0.25 1</diffuse></material>
+        </visual>
+        <visual name="cross_arm">
+          <pose>0 0 7.5 0 0 0</pose>
+          <geometry><box><size>0.1 3.0 0.1</size></box></geometry>
+          <material><ambient>0.4 0.3 0.2 1</ambient><diffuse>0.5 0.38 0.25 1</diffuse></material>
+        </visual>
+        <visual name="insulator_l">
+          <pose>0 -1.3 7.2 0 0 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.3</length></cylinder></geometry>
+          <material><ambient>0.3 0.6 0.3 1</ambient><diffuse>0.4 0.7 0.4 1</diffuse></material>
+        </visual>
+        <visual name="insulator_r">
+          <pose>0 1.3 7.2 0 0 0</pose>
+          <geometry><cylinder><radius>0.04</radius><length>0.3</length></cylinder></geometry>
+          <material><ambient>0.3 0.6 0.3 1</ambient><diffuse>0.4 0.7 0.4 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Power lines connecting poles (thin cylinders) -->
+    <model name="power_line_1">
+      <static>true</static>
+      <pose>-8 0 7.2 0 1.5708 1.5708</pose>
+      <link name="wire"><visual name="w">
+        <geometry><cylinder><radius>0.01</radius><length>12</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+      </visual></link>
+    </model>
+    <model name="power_line_2">
+      <static>true</static>
+      <pose>-8 0 7.5 0 1.5708 1.5708</pose>
+      <link name="wire"><visual name="w">
+        <geometry><cylinder><radius>0.01</radius><length>12</length></cylinder></geometry>
+        <material><ambient>0.1 0.1 0.1 1</ambient><diffuse>0.15 0.15 0.15 1</diffuse></material>
+      </visual></link>
+    </model>
+
+    <!-- ============================================================ -->
     <!-- THE DRONE                                                     -->
     <!-- ============================================================ -->
     <include>
       <uri>model://simple_drone</uri>
-      <pose>0 -5 1 0 0 0</pose>
+      <pose>0 -6 1 0 0 0</pose>
     </include>
 
   </world>
