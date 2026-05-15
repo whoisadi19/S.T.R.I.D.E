@@ -24,6 +24,12 @@
           <speed>2</speed>
         </clouds>
       </sky>
+      <fog>
+        <color>0.7 0.75 0.8 1</color>
+        <type>linear</type>
+        <start>30.0</start>
+        <end>120.0</end>
+      </fog>
     </scene>
 
     <!-- Sun — primary directional light -->
@@ -969,6 +975,43 @@
         <visual name="v"><geometry><box><size>3.0 1.5 2.5</size></box></geometry>
         <material><ambient>0.5 0.2 0.15 1</ambient><diffuse>0.6 0.25 0.18 1</diffuse></material></visual>
         <collision name="c"><geometry><box><size>3.0 1.5 2.5</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
+    <!-- HELIPAD (Launch & Return Zone)                               -->
+    <!-- ============================================================ -->
+    <model name="helipad">
+      <static>true</static>
+      <pose>0 -6 0.01 0 0 0</pose>
+      <link name="pad">
+        <visual name="v_base">
+          <geometry><cylinder><radius>1.5</radius><length>0.02</length></cylinder></geometry>
+          <material><ambient>0.2 0.2 0.2 1</ambient><diffuse>0.3 0.3 0.3 1</diffuse></material>
+        </visual>
+        <visual name="v_ring">
+          <pose>0 0 0.011 0 0 0</pose>
+          <geometry><cylinder><radius>1.4</radius><length>0.002</length></cylinder></geometry>
+          <material><ambient>0.8 0.8 0 1</ambient><diffuse>0.9 0.9 0.1 1</diffuse></material>
+        </visual>
+        <visual name="v_h1">
+          <pose>-0.3 0 0.012 0 0 0</pose>
+          <geometry><box><size>0.2 1.0 0.002</size></box></geometry>
+          <material><ambient>0.8 0.8 0 1</ambient><diffuse>0.9 0.9 0.1 1</diffuse></material>
+        </visual>
+        <visual name="v_h2">
+          <pose>0.3 0 0.012 0 0 0</pose>
+          <geometry><box><size>0.2 1.0 0.002</size></box></geometry>
+          <material><ambient>0.8 0.8 0 1</ambient><diffuse>0.9 0.9 0.1 1</diffuse></material>
+        </visual>
+        <visual name="v_h3">
+          <pose>0 0 0.012 0 0 0</pose>
+          <geometry><box><size>0.4 0.2 0.002</size></box></geometry>
+          <material><ambient>0.8 0.8 0 1</ambient><diffuse>0.9 0.9 0.1 1</diffuse></material>
+        </visual>
+        <collision name="c">
+          <geometry><cylinder><radius>1.5</radius><length>0.02</length></cylinder></geometry>
+        </collision>
       </link>
     </model>
 
