@@ -845,6 +845,134 @@
     </model>
 
     <!-- ============================================================ -->
+    <!-- DANGER ZONES & SAFETY MARKINGS                                -->
+    <!-- ============================================================ -->
+
+    <!-- Danger zone — red striped area around tower base -->
+    <model name="danger_zone_tower">
+      <static>true</static>
+      <pose>0 0 0.006 0 0 0</pose>
+      <link name="dz_link">
+        <visual name="dz_ring">
+          <geometry><cylinder><radius>3.0</radius><length>0.002</length></cylinder></geometry>
+          <material>
+            <ambient>0.8 0.15 0.1 0.6</ambient>
+            <diffuse>0.9 0.2 0.1 0.65</diffuse>
+          </material>
+        </visual>
+        <!-- Stripe bars -->
+        <visual name="stripe1">
+          <pose>2.5 0 0.002 0 0 0.4</pose>
+          <geometry><box><size>1.5 0.08 0.002</size></box></geometry>
+          <material><ambient>0.9 0.9 0.0 1</ambient><diffuse>1 1 0 1</diffuse></material>
+        </visual>
+        <visual name="stripe2">
+          <pose>-2.5 0 0.002 0 0 -0.4</pose>
+          <geometry><box><size>1.5 0.08 0.002</size></box></geometry>
+          <material><ambient>0.9 0.9 0.0 1</ambient><diffuse>1 1 0 1</diffuse></material>
+        </visual>
+        <visual name="stripe3">
+          <pose>0 2.5 0.002 0 0 0.8</pose>
+          <geometry><box><size>1.5 0.08 0.002</size></box></geometry>
+          <material><ambient>0.9 0.9 0.0 1</ambient><diffuse>1 1 0 1</diffuse></material>
+        </visual>
+        <visual name="stripe4">
+          <pose>0 -2.5 0.002 0 0 -0.8</pose>
+          <geometry><box><size>1.5 0.08 0.002</size></box></geometry>
+          <material><ambient>0.9 0.9 0.0 1</ambient><diffuse>1 1 0 1</diffuse></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Safety cones around work area -->
+    <model name="cone_1"><static>true</static><pose>3.5 3.5 0.15 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><cylinder><radius>0.1</radius><length>0.3</length></cylinder></geometry>
+      <material><ambient>1.0 0.5 0.0 1</ambient><diffuse>1 0.6 0.0 1</diffuse></material></visual></link></model>
+    <model name="cone_2"><static>true</static><pose>-3.5 3.5 0.15 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><cylinder><radius>0.1</radius><length>0.3</length></cylinder></geometry>
+      <material><ambient>1.0 0.5 0.0 1</ambient><diffuse>1 0.6 0.0 1</diffuse></material></visual></link></model>
+    <model name="cone_3"><static>true</static><pose>3.5 -3.5 0.15 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><cylinder><radius>0.1</radius><length>0.3</length></cylinder></geometry>
+      <material><ambient>1.0 0.5 0.0 1</ambient><diffuse>1 0.6 0.0 1</diffuse></material></visual></link></model>
+    <model name="cone_4"><static>true</static><pose>-3.5 -3.5 0.15 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><cylinder><radius>0.1</radius><length>0.3</length></cylinder></geometry>
+      <material><ambient>1.0 0.5 0.0 1</ambient><diffuse>1 0.6 0.0 1</diffuse></material></visual></link></model>
+
+    <!-- Safety cones near bridge -->
+    <model name="cone_b1"><static>true</static><pose>16 -2 0.15 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><cylinder><radius>0.1</radius><length>0.3</length></cylinder></geometry>
+      <material><ambient>1.0 0.5 0.0 1</ambient><diffuse>1 0.6 0.0 1</diffuse></material></visual></link></model>
+    <model name="cone_b2"><static>true</static><pose>16 2 0.15 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><cylinder><radius>0.1</radius><length>0.3</length></cylinder></geometry>
+      <material><ambient>1.0 0.5 0.0 1</ambient><diffuse>1 0.6 0.0 1</diffuse></material></visual></link></model>
+
+    <!-- ============================================================ -->
+    <!-- INSPECTION CHECKPOINT MARKERS (green glowing spheres)         -->
+    <!-- ============================================================ -->
+    <!-- Tower checkpoint -->
+    <model name="checkpoint_tower"><static>true</static><pose>0 -4 0.3 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><sphere><radius>0.12</radius></sphere></geometry>
+      <material><ambient>0.0 0.8 0.2 1</ambient><diffuse>0.0 1.0 0.3 1</diffuse><emissive>0.0 0.6 0.15 1</emissive></material></visual></link></model>
+    <!-- Bridge checkpoint -->
+    <model name="checkpoint_bridge"><static>true</static><pose>16 0 0.3 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><sphere><radius>0.12</radius></sphere></geometry>
+      <material><ambient>0.0 0.8 0.2 1</ambient><diffuse>0.0 1.0 0.3 1</diffuse><emissive>0.0 0.6 0.15 1</emissive></material></visual></link></model>
+    <!-- Pipeline checkpoint -->
+    <model name="checkpoint_pipeline"><static>true</static><pose>-12 6 0.3 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><sphere><radius>0.12</radius></sphere></geometry>
+      <material><ambient>0.0 0.8 0.2 1</ambient><diffuse>0.0 1.0 0.3 1</diffuse><emissive>0.0 0.6 0.15 1</emissive></material></visual></link></model>
+    <!-- Power line checkpoint -->
+    <model name="checkpoint_power"><static>true</static><pose>-8 -12 0.3 0 0 0</pose>
+      <link name="l"><visual name="v"><geometry><sphere><radius>0.12</radius></sphere></geometry>
+      <material><ambient>0.0 0.8 0.2 1</ambient><diffuse>0.0 1.0 0.3 1</diffuse><emissive>0.0 0.6 0.15 1</emissive></material></visual></link></model>
+
+    <!-- ============================================================ -->
+    <!-- ADDITIONAL DAMAGE / DEFECT PATCHES                            -->
+    <!-- ============================================================ -->
+    <!-- Large crack on tower lower section -->
+    <model name="crack_tower_1"><static>true</static><pose>0 1.49 2.0 0 0 0</pose>
+      <link name="l"><visual name="v"><pose>0 0 0 0 0 0.3</pose>
+      <geometry><box><size>0.03 0.03 1.2</size></box></geometry>
+      <material><ambient>0.15 0.15 0.12 1</ambient><diffuse>0.2 0.2 0.15 1</diffuse></material></visual></link></model>
+    <!-- Spalling patch on tower -->
+    <model name="spall_tower"><static>true</static><pose>1.48 0.5 4.0 0 0 0</pose>
+      <link name="l"><visual name="v">
+      <geometry><box><size>0.03 0.7 0.5</size></box></geometry>
+      <material><ambient>0.4 0.35 0.28 1</ambient><diffuse>0.5 0.42 0.32 1</diffuse></material></visual></link></model>
+    <!-- Rust streak on bridge pillar -->
+    <model name="rust_bridge_pillar"><static>true</static><pose>17 -1.2 0.8 0 0 0</pose>
+      <link name="l"><visual name="v">
+      <geometry><box><size>0.52 0.52 0.6</size></box></geometry>
+      <material><ambient>0.55 0.3 0.12 1</ambient><diffuse>0.65 0.35 0.15 1</diffuse></material></visual></link></model>
+    <!-- Corrosion on pipeline -->
+    <model name="corrosion_pipe"><static>true</static><pose>-10.5 7.4 2.8 0 0 0</pose>
+      <link name="l"><visual name="v">
+      <geometry><box><size>0.8 0.04 0.2</size></box></geometry>
+      <material><ambient>0.6 0.28 0.08 1</ambient><diffuse>0.7 0.33 0.1 1</diffuse></material></visual></link></model>
+
+    <!-- ============================================================ -->
+    <!-- NARROW PASSAGE (between storage containers near pipeline)     -->
+    <!-- ============================================================ -->
+    <model name="container_left">
+      <static>true</static>
+      <pose>-12 4 1.25 0 0 0</pose>
+      <link name="l">
+        <visual name="v"><geometry><box><size>3.0 1.5 2.5</size></box></geometry>
+        <material><ambient>0.2 0.35 0.5 1</ambient><diffuse>0.25 0.4 0.55 1</diffuse></material></visual>
+        <collision name="c"><geometry><box><size>3.0 1.5 2.5</size></box></geometry></collision>
+      </link>
+    </model>
+    <model name="container_right">
+      <static>true</static>
+      <pose>-12 1.5 1.25 0 0 0</pose>
+      <link name="l">
+        <visual name="v"><geometry><box><size>3.0 1.5 2.5</size></box></geometry>
+        <material><ambient>0.5 0.2 0.15 1</ambient><diffuse>0.6 0.25 0.18 1</diffuse></material></visual>
+        <collision name="c"><geometry><box><size>3.0 1.5 2.5</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <!-- ============================================================ -->
     <!-- THE DRONE                                                     -->
     <!-- ============================================================ -->
     <include>
