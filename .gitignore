@@ -1,0 +1,41 @@
+# ROS 2 build artifacts
+workspace/build/
+workspace/install/
+workspace/log/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+*.egg
+
+# YOLO model weights (too large for git)
+*.pt
+*.onnx
+runs/
+
+# Corrosion webapp generated files (uploads/results are user-generated, not source code)
+corrosion_webapp/uploads/
+corrosion_webapp/results/
+
+# Vision pipeline test output images
+workspace/src/vision_pkg/scripts/*.jpg
+
+# Docker
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Temp files
+*.swp
+*.swo
+*~

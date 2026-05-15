@@ -1,0 +1,96 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="simple_drone">
+    <static>true</static>
+    <!-- Base Link -->
+    <link name="base_link">
+      <inertial>
+        <mass>1.5</mass>
+        <inertia>
+          <ixx>0.0347</ixx>
+          <iyy>0.0458</iyy>
+          <izz>0.0977</izz>
+        </inertia>
+      </inertial>
+      <collision name="base_collision">
+        <geometry>
+          <box>
+            <size>0.4 0.4 0.1</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="base_visual">
+        <geometry>
+          <box>
+            <size>0.4 0.4 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <ambient>0.2 0.2 0.2 1</ambient>
+          <diffuse>0.2 0.2 0.2 1</diffuse>
+        </material>
+      </visual>
+
+      <!-- Camera Sensor -->
+      <sensor name="camera_sensor" type="camera">
+        <pose>0.2 0 0 0 0 0</pose>
+        <visualize>true</visualize>
+        <update_rate>30.0</update_rate>
+        <camera name="head">
+          <horizontal_fov>1.3962634</horizontal_fov>
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.02</near>
+            <far>300</far>
+          </clip>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+          <ros>
+            <remapping>~/image_raw:=/camera/image_raw</remapping>
+            <remapping>~/camera_info:=/camera/camera_info</remapping>
+          </ros>
+          <camera_name>drone_camera</camera_name>
+          <frame_name>camera_link</frame_name>
+        </plugin>
+      </sensor>
+
+      <!-- LiDAR Sensor -->
+      <sensor name="lidar_sensor" type="ray">
+        <pose>0.0 0 0.05 0 0 0</pose>
+        <visualize>false</visualize>
+        <update_rate>10</update_rate>
+        <ray>
+          <scan>
+            <horizontal>
+              <samples>360</samples>
+              <resolution>1</resolution>
+              <min_angle>-3.14159</min_angle>
+              <max_angle>3.14159</max_angle>
+            </horizontal>
+          </scan>
+          <range>
+            <min>0.12</min>
+            <max>10.0</max>
+            <resolution>0.01</resolution>
+          </range>
+        </ray>
+        <plugin name="lidar_controller" filename="libgazebo_ros_ray_sensor.so">
+          <ros>
+            <remapping>~/out:=/scan</remapping>
+          </ros>
+          <output_type>sensor_msgs/LaserScan</output_type>
+          <frame_name>lidar_link</frame_name>
+        </plugin>
+      </sensor>
+    </link>
+
+    <!-- In a fully realistic physics model we'd use gazebo_ros_force_based_move or similar.
+         But since we want a kinematic prototype managed by our own node, we don't attach
+         a movement plugin here. We will use the /set_entity_state service in our ROS 2 node. -->
+
+  </model>
+</sdf>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Corrosion Detection</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  </head>
+  <body>
+    <main class="shell">
+      <section class="panel">
+        <div class="header">
+          <p class="eyebrow">OpenCV offline test</p>
+          <h1>Corrosion Detection</h1>
+        </div>
+
+        <form class="upload" enctype="multipart/form-data" id="upload-form">
+          <label class="dropzone">
+            <span>Upload inspection image</span>
+            <input type="file" name="image" accept="image/*" required>
+          </label>
+          <button type="submit" id="submit-button">Detect Corrosion</button>
+        </form>
+        <p class="processing" id="processing">Processing image with OpenCV...</p>
+
+        {% if error %}
+          <p class="error">{{ error }}</p>
+        {% endif %}
+      </section>
+
+        <section class="results" id="results" hidden>
+          <div class="summary">
+            <h2 id="result-title">0 detections</h2>
+            <p>Processed locally using OpenCV color thresholding and contour analysis.</p>
+          </div>
+
+          <div class="images">
+            <figure>
+              <img id="original-image" src="" alt="Uploaded inspection">
+              <figcaption>Original</figcaption>
+            </figure>
+            <figure>
+              <img id="detected-image" src="" alt="Annotated corrosion detection">
+              <figcaption>Detected</figcaption>
+            </figure>
+          </div>
+
+            <div class="table-wrap" id="table-wrap" hidden>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Class</th>
+                    <th>Confidence</th>
+                    <th>Severity</th>
+                    <th>Box</th>
+                  </tr>
+                </thead>
+                <tbody id="detections-body"></tbody>
+              </table>
+            </div>
+        </section>
+    </main>
+    <script>
+      const form = document.getElementById("upload-form");
+      const button = document.getElementById("submit-button");
+      const processing = document.getElementById("processing");
+      const fileInput = form.querySelector("input[type='file']");
+      const results = document.getElementById("results");
+      const resultTitle = document.getElementById("result-title");
+      const originalImage = document.getElementById("original-image");
+      const detectedImage = document.getElementById("detected-image");
+      const tableWrap = document.getElementById("table-wrap");
+      const detectionsBody = document.getElementById("detections-body");
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        if (!fileInput.files.length) {
+          return;
+        }
+
+        button.disabled = true;
+        button.textContent = "Processing...";
+        processing.style.display = "block";
+        results.hidden = true;
+
+        try {
+          const formData = new FormData(form);
+          const response = await fetch("/detect", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Detection failed.");
+          }
+
+          resultTitle.textContent = `${data.count} detection${data.count === 1 ? "" : "s"}`;
+          originalImage.src = data.input_url;
+          detectedImage.src = data.output_url;
+          detectionsBody.innerHTML = "";
+
+          data.detections.forEach((item) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td>${item.class}</td>
+              <td>${(item.confidence * 100).toFixed(1)}%</td>
+              <td>${item.severity}</td>
+              <td>${JSON.stringify(item.bbox)}</td>
+            `;
+            detectionsBody.appendChild(row);
+          });
+
+          tableWrap.hidden = data.detections.length === 0;
+          results.hidden = false;
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          button.disabled = false;
+          button.textContent = "Detect Corrosion";
+          processing.style.display = "none";
+        }
+      });
+    </script>
+  </body>
+</html>

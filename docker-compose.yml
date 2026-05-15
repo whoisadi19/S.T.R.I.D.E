@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  ros2_gazebo:
+    build: .
+    container_name: drone_simulation
+    ports:
+      - "8080:8080"  # NoVNC web interface
+      - "8000:8000"  # FastAPI Backend (for later)
+      - "3000:3000"  # Next.js Frontend (for later)
+    volumes:
+      - ./workspace:/workspace
+    environment:
+      - RESOLUTION=1280x720
+    stdin_open: true
+    tty: true
