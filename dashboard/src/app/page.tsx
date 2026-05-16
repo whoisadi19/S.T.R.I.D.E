@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [sysTime, setSysTime] = useState<string>("00:00:00");
   const [logs, setLogs] = useState<string[]>(["> SYS.INIT() OK..."]);
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const lastPhaseRef = useRef<string>("OFFLINE");
 
   // System clock
   useEffect(() => {
@@ -70,8 +71,9 @@ export default function Dashboard() {
         try {
           const data: WSData = JSON.parse(event.data);
           
-          if (data.telemetry.phase !== telemetry.phase) {
+          if (data.telemetry.phase !== lastPhaseRef.current) {
             setLogs(prev => [...prev, `> PHASE.TRANSITION: ${data.telemetry.phase}`]);
+            lastPhaseRef.current = data.telemetry.phase;
           }
 
           if (data.defects.length > 0) {
