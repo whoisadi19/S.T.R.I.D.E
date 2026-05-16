@@ -64,7 +64,7 @@ class DefectDetectionNode(Node):
 
         # --- Subscribers ---
         self.image_sub = self.create_subscription(
-            Image, '/camera/image_raw', self.image_callback, 10)
+            Image, '/drone_camera/image_raw', self.image_callback, 10)
 
         # --- Publishers ---
         self.annotated_pub = self.create_publisher(

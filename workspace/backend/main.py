@@ -1,6 +1,23 @@
+"""
+S.T.R.I.D.E. FastAPI Backend — Real-Time ROS 2 Bridge
+
+Subscribes to actual ROS 2 topics from the simulation:
+  /drone/telemetry       — JSON telemetry from kinematics_node (2Hz)
+  /drone/battery         — JSON battery status from kinematics_node (20Hz)
+  /mission/status        — JSON mission phase from navigation_node
+  /vision/annotated_image — CompressedImage JPEG from defect_detection_node
+  /vision/defects        — JSON defect list from defect_detection_node
+  /drone_camera/image_raw — Raw camera Image (fallback if vision node not running)
+
+Serves:
+  GET  /video_feed      — MJPEG stream for the dashboard
+  WS   /ws/telemetry    — WebSocket for live telemetry + defects
+"""
+
 import asyncio
 import json
 import time
+import threading
 import cv2
 import numpy as np
 from fastapi import FastAPI, WebSocket
@@ -8,12 +25,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import CompressedImage
+from sensor_msgs.msg import Image, CompressedImage
 from std_msgs.msg import String
+from cv_bridge import CvBridge
 
 app = FastAPI(title="S.T.R.I.D.E. Backend")
 
-# Allow CORS for Next.js
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,53 +39,126 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Global variables for ROS 2 data
-latest_frame = None
-latest_defects = []
+# ── Shared State ─────────────────────────────────────────────────────
+latest_jpeg = None          # bytes: latest JPEG frame for MJPEG stream
+latest_defects = []         # list of defect dicts
 telemetry_data = {
-    "battery": 100,
+    "battery": 100.0,
     "altitude": 0.0,
-    "phase": "PRE_FLIGHT",
+    "phase": "AWAITING_LINK",
     "speed": 0.0,
-    "gps": "ACQUIRING...",
-    "signal": 100,
+    "gps": "-- , --",
+    "signal": 95,
+    "heading": 0.0,
+    "flight_time": 0.0,
+    "distance": 0.0,
+    "position": {"x": 0.0, "y": 0.0, "z": 0.0},
 }
+bridge = CvBridge()
+
 
 class RosBridgeNode(Node):
     def __init__(self):
         super().__init__('fastapi_bridge_node')
-        self.image_sub = self.create_subscription(
-            CompressedImage, '/vision/annotated_image', self.image_callback, 10)
-        self.defect_sub = self.create_subscription(
-            String, '/vision/defects', self.defect_callback, 10)
-        self.status_sub = self.create_subscription(
-            String, '/mission/status', self.status_callback, 10)
-        
-    def image_callback(self, msg):
-        global latest_frame
-        latest_frame = msg.data
+        self.get_logger().info('S.T.R.I.D.E. Backend Bridge starting...')
 
-    def defect_callback(self, msg):
+        # ── Vision: annotated frames (CompressedImage JPEG) ──────────
+        self.create_subscription(
+            CompressedImage, '/vision/annotated_image',
+            self.annotated_image_cb, 10)
+
+        # ── Vision fallback: raw camera feed (if vision node is down) ──
+        self.create_subscription(
+            Image, '/drone_camera/image_raw',
+            self.raw_image_cb, 10)
+
+        # ── Defects ──────────────────────────────────────────────────
+        self.create_subscription(
+            String, '/vision/defects',
+            self.defect_cb, 10)
+
+        # ── Telemetry from kinematics_node (2Hz, comprehensive) ──────
+        self.create_subscription(
+            String, '/drone/telemetry',
+            self.telemetry_cb, 10)
+
+        # ── Battery from kinematics_node (20Hz) ──────────────────────
+        self.create_subscription(
+            String, '/drone/battery',
+            self.battery_cb, 10)
+
+        # ── Mission status from navigation_node ──────────────────────
+        self.create_subscription(
+            String, '/mission/status',
+            self.mission_cb, 10)
+
+        self.has_annotated = False  # flag: prefer annotated over raw
+        self.get_logger().info('Subscribed to all ROS 2 topics.')
+
+    # ── Callbacks ────────────────────────────────────────────────────
+
+    def annotated_image_cb(self, msg):
+        global latest_jpeg
+        self.has_annotated = True
+        latest_jpeg = bytes(msg.data)
+
+    def raw_image_cb(self, msg):
+        global latest_jpeg
+        if self.has_annotated:
+            return  # prefer annotated frames when available
+        try:
+            cv_image = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
+            _, jpeg = cv2.imencode('.jpg', cv_image, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            latest_jpeg = jpeg.tobytes()
+        except Exception as e:
+            self.get_logger().error(f'Raw image conversion error: {e}',
+                                   throttle_duration_sec=5.0)
+
+    def defect_cb(self, msg):
         global latest_defects
         try:
             data = json.loads(msg.data)
             latest_defects = data.get('defects', [])
-        except Exception as e:
-            self.get_logger().error(f"Defect parse error: {e}")
+        except Exception:
+            pass
 
-    def status_callback(self, msg):
+    def telemetry_cb(self, msg):
         global telemetry_data
         try:
             data = json.loads(msg.data)
-            telemetry_data["battery"] = data.get("battery_percent", 100)
-            telemetry_data["phase"] = data.get("phase", "UNKNOWN")
-            pos = data.get("position", {"z": 0.0, "x": 0.0, "y": 0.0})
-            telemetry_data["altitude"] = pos.get("z", 0.0)
-            telemetry_data["gps"] = f"34.0522 N, 118.2437 W | x:{pos.get('x',0.0):.1f} y:{pos.get('y',0.0):.1f}"
-        except Exception as e:
+            pos = data.get('position', {})
+            vel = data.get('velocity', {})
+            telemetry_data["altitude"] = data.get("altitude", 0.0)
+            telemetry_data["speed"] = vel.get("speed", 0.0)
+            telemetry_data["heading"] = data.get("heading_deg", 0.0)
+            telemetry_data["flight_time"] = data.get("flight_time_sec", 0.0)
+            telemetry_data["distance"] = data.get("total_distance_m", 0.0)
+            telemetry_data["position"] = pos
+            telemetry_data["gps"] = (
+                f"x:{pos.get('x',0.0):.1f}  y:{pos.get('y',0.0):.1f}  "
+                f"z:{pos.get('z',0.0):.1f}")
+        except Exception:
             pass
 
-# --- Background ROS 2 Thread ---
+    def battery_cb(self, msg):
+        global telemetry_data
+        try:
+            data = json.loads(msg.data)
+            telemetry_data["battery"] = data.get("percentage", 100.0)
+            telemetry_data["signal"] = 95  # simulated constant
+        except Exception:
+            pass
+
+    def mission_cb(self, msg):
+        global telemetry_data
+        try:
+            data = json.loads(msg.data)
+            telemetry_data["phase"] = data.get("phase", "UNKNOWN")
+        except Exception:
+            pass
+
+
+# ── ROS 2 Spin Thread ────────────────────────────────────────────────
 def ros_spin():
     rclpy.init()
     node = RosBridgeNode()
@@ -80,48 +170,51 @@ def ros_spin():
         node.destroy_node()
         rclpy.shutdown()
 
-import threading
 ros_thread = threading.Thread(target=ros_spin, daemon=True)
 ros_thread.start()
 
-# --- FastAPI Endpoints ---
 
+# ── MJPEG Video Stream ──────────────────────────────────────────────
 def generate_mjpeg():
-    """Generator for MJPEG stream from ROS 2 CompressedImage"""
     while True:
-        if latest_frame is not None:
+        if latest_jpeg is not None:
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + latest_frame + b'\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' +
+                   latest_jpeg + b'\r\n')
         else:
-            # Fallback black frame if no ROS data
+            # Black placeholder frame
             blank = np.zeros((480, 640, 3), dtype=np.uint8)
-            cv2.putText(blank, "AWAITING VIDEO STREAM...", (180, 240), 
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+            cv2.putText(blank, "AWAITING VIDEO STREAM...", (140, 240),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (80, 80, 80), 2)
             _, jpeg = cv2.imencode('.jpg', blank)
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
-        time.sleep(0.05)  # 20 FPS
+                   b'Content-Type: image/jpeg\r\n\r\n' +
+                   jpeg.tobytes() + b'\r\n')
+        time.sleep(0.05)  # ~20 FPS
+
 
 @app.get("/video_feed")
 def video_feed():
-    """HTTP endpoint for the MJPEG stream."""
-    return StreamingResponse(generate_mjpeg(), media_type="multipart/x-mixed-replace; boundary=frame")
+    return StreamingResponse(
+        generate_mjpeg(),
+        media_type="multipart/x-mixed-replace; boundary=frame")
+
 
 @app.websocket("/ws/telemetry")
 async def websocket_telemetry(websocket: WebSocket):
-    """WebSocket endpoint for live telemetry and defects."""
     await websocket.accept()
     try:
         while True:
             payload = {
                 "telemetry": telemetry_data,
                 "defects": latest_defects,
-                "timestamp": time.time()
+                "timestamp": time.time(),
             }
             await websocket.send_json(payload)
-            await asyncio.sleep(0.5) # 2 Hz updates
-    except Exception as e:
-        print(f"WebSocket disconnected: {e}")
+            await asyncio.sleep(0.5)  # 2 Hz
+    except Exception:
+        pass
+
 
 if __name__ == "__main__":
     import uvicorn
