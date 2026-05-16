@@ -27,7 +27,6 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image, CompressedImage
 from std_msgs.msg import String
-from cv_bridge import CvBridge
 
 app = FastAPI(title="S.T.R.I.D.E. Backend")
 
@@ -54,7 +53,6 @@ telemetry_data = {
     "distance": 0.0,
     "position": {"x": 0.0, "y": 0.0, "z": 0.0},
 }
-bridge = CvBridge()
 
 
 class RosBridgeNode(Node):
@@ -107,8 +105,13 @@ class RosBridgeNode(Node):
         if self.has_annotated:
             return  # prefer annotated frames when available
         try:
-            cv_image = bridge.imgmsg_to_cv2(msg, desired_encoding='bgr8')
-            _, jpeg = cv2.imencode('.jpg', cv_image, [cv2.IMWRITE_JPEG_QUALITY, 80])
+            # Manual conversion: ROS Image → numpy → JPEG (no cv_bridge needed)
+            img = np.frombuffer(msg.data, dtype=np.uint8).reshape(
+                msg.height, msg.width, 3)
+            # ROS uses RGB, OpenCV uses BGR
+            if msg.encoding == 'rgb8':
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+            _, jpeg = cv2.imencode('.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 80])
             latest_jpeg = jpeg.tobytes()
         except Exception as e:
             self.get_logger().error(f'Raw image conversion error: {e}',
