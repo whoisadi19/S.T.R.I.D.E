@@ -358,7 +358,7 @@
       <!-- ======================== CAMERA GIMBAL ======================== -->
       <!-- Camera housing (front-mounted, angled down slightly) -->
       <visual name="camera_housing">
-        <pose>0.14 0 -0.04 0 0.3 0</pose>
+        <pose>0.14 0 -0.04 0 0.0 0</pose>
         <geometry>
           <box>
             <size>0.03 0.04 0.03</size>
@@ -390,7 +390,7 @@
 
       <!-- RGB Camera Sensor (Depth disabled to prevent Xvfb software-rendering crashes) -->
       <sensor name="camera_sensor" type="camera">
-        <pose>0.2 0 -0.04 0 0.3 0</pose>
+        <pose>0.2 0 -0.04 0 0.0 0</pose>
         <visualize>true</visualize>
         <update_rate>30.0</update_rate>
         <camera name="head">

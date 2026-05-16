@@ -41,11 +41,9 @@ class RosBridgeNode(Node):
             CompressedImage, '/vision/annotated_image', self.image_callback, 10)
         self.defect_sub = self.create_subscription(
             String, '/vision/defects', self.defect_callback, 10)
+        self.status_sub = self.create_subscription(
+            String, '/mission/status', self.status_callback, 10)
         
-        # Simulate Telemetry Updates (since we don't have a full mavros stack here)
-        self.timer = self.create_timer(1.0, self.update_mock_telemetry)
-        self.start_time = time.time()
-
     def image_callback(self, msg):
         global latest_frame
         latest_frame = msg.data
@@ -58,29 +56,17 @@ class RosBridgeNode(Node):
         except Exception as e:
             self.get_logger().error(f"Defect parse error: {e}")
 
-    def update_mock_telemetry(self):
+    def status_callback(self, msg):
         global telemetry_data
-        elapsed = time.time() - self.start_time
-        
-        # Simulate Battery Drain
-        telemetry_data["battery"] = max(0, 100 - int(elapsed / 10))
-        
-        # Simulate Altitude and Phase
-        if elapsed < 5:
-            telemetry_data["phase"] = "PRE_FLIGHT"
-            telemetry_data["altitude"] = 1.0
-            telemetry_data["gps"] = "34.0522 N, 118.2437 W"
-        elif elapsed < 15:
-            telemetry_data["phase"] = "TAKEOFF"
-            telemetry_data["altitude"] = min(10.0, 1.0 + (elapsed - 5) * 1.5)
-            telemetry_data["speed"] = 1.5
-        else:
-            telemetry_data["phase"] = "INSPECT_TOWER"
-            telemetry_data["altitude"] = 10.0 + np.sin(elapsed / 2.0) * 0.5
-            telemetry_data["speed"] = 0.5
-
-        # Simulate Signal Fluctuation
-        telemetry_data["signal"] = 90 + int(np.random.normal(0, 5))
+        try:
+            data = json.loads(msg.data)
+            telemetry_data["battery"] = data.get("battery_percent", 100)
+            telemetry_data["phase"] = data.get("phase", "UNKNOWN")
+            pos = data.get("position", {"z": 0.0, "x": 0.0, "y": 0.0})
+            telemetry_data["altitude"] = pos.get("z", 0.0)
+            telemetry_data["gps"] = f"34.0522 N, 118.2437 W | x:{pos.get('x',0.0):.1f} y:{pos.get('y',0.0):.1f}"
+        except Exception as e:
+            pass
 
 # --- Background ROS 2 Thread ---
 def ros_spin():

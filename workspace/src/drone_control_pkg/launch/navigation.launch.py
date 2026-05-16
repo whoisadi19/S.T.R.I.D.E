@@ -15,5 +15,11 @@ def generate_launch_description():
             executable='navigation_node',
             name='navigation_node',
             output='screen'
+        ),
+        Node(
+            package='vision_pkg',
+            executable='defect_detection_node',
+            name='defect_detection_node',
+            output='screen'
         )
     ])
